@@ -43,6 +43,7 @@ pd.set_option("display.float_format", lambda x: f"{x:,.4f}")
 ## 2) Load dữ liệu thô
 
 Link tải data: [Data](https://drive.google.com/drive/folders/1nyfA7tsNoBOJbp5byl3FLjzS-ej-i8lG?usp=sharing)
+
 Bây giờ hãy đọc các bảng dữ liệu Home Credit bao gồm 8 nguồn dữ liệu khác nhau:
 
 * application_train/application_test: dữ liệu huấn luyện và kiểm tra chính với thông tin về mỗi đơn xin vay tại Home Credit. Mỗi khoản vay có hàng riêng và được xác định bởi đặc trưng `SK_ID_CURR`. Dữ liệu đơn xin vay huấn luyện đi kèm với `TARGET` cho biết 0: khoản vay đã được trả hoặc 1: khoản vay không được trả. 
