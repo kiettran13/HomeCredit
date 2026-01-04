@@ -1,5 +1,5 @@
 ## Default Risk Predict Model — HomeCredit ###
-Trong dự án này này, tôi sẽ cùng dựng một model dự đoán **khả năng vỡ nợ** (default) cho bộ dữ liệu Home Credit  - một dịch vụ chuyên cung cấp các hạn mức tín dụng (khoản vay) cho dân số không có tài khoản ngân hàng. Mục tiêu của dự án là xây dựng một mô hình cân đối giữa chỉ số kỹ thuật và mục tiêu kinh doanh thực tế, kết quả của mô hình phải ra một **quyết định duyệt/không duyệt** rõ ràng
+Trong dự án này này, tôi sẽ dựng một model dự đoán **khả năng vỡ nợ** (default) cho bộ dữ liệu Home Credit trên [Kaggle](https://www.kaggle.com/competitions/home-credit-default-risk/overview). Đây một dịch vụ chuyên cung cấp các hạn mức tín dụng (khoản vay) cho dân số không có tài khoản ngân hàng. Mục tiêu của dự án là xây dựng một mô hình cân đối giữa chỉ số kỹ thuật và mục tiêu kinh doanh thực tế, kết quả của mô hình phải ra một **quyết định duyệt/không duyệt** rõ ràng
 
 Dữ liệu để xác lập mục tiêu kinh doanh được tham khảo từ dữ liệu của các tổ chức tín dụng trên thị trường và HomeCredit với mục tiêu cân đối giữa tỷ lệ chấp nhận khoản vay và trần tỷ lệ nợ xấu chấp nhận: 
 - Tỷ lệ chấp nhận khoản vay nằm trong khoảng **60%-70%** 
@@ -42,7 +42,8 @@ pd.set_option("display.float_format", lambda x: f"{x:,.4f}")
 
 ## 2) Load dữ liệu thô
 
-Bây giờ hãy đọc các bảng dữ liệu Home Credit bao gồm 7 nguồn dữ liệu khác nhau:
+Link tải data: [Data](https://drive.google.com/drive/folders/1nyfA7tsNoBOJbp5byl3FLjzS-ej-i8lG?usp=sharing)
+Bây giờ hãy đọc các bảng dữ liệu Home Credit bao gồm 8 nguồn dữ liệu khác nhau:
 
 * application_train/application_test: dữ liệu huấn luyện và kiểm tra chính với thông tin về mỗi đơn xin vay tại Home Credit. Mỗi khoản vay có hàng riêng và được xác định bởi đặc trưng `SK_ID_CURR`. Dữ liệu đơn xin vay huấn luyện đi kèm với `TARGET` cho biết 0: khoản vay đã được trả hoặc 1: khoản vay không được trả. 
 * bureau: dữ liệu về các khoản tín dụng trước đây của khách hàng từ các tổ chức tài chính khác. Mỗi khoản tín dụng trước đây có hàng riêng trong bureau, nhưng một khoản vay trong dữ liệu đơn xin có thể có nhiều khoản tín dụng trước đây.
