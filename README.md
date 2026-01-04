@@ -1,5 +1,5 @@
-### Default Risk Predict Model — HomeCredit
-Trong dự án này này, tôi sẽ cùng dựng một pipeline dự báo **khả năng vỡ nợ** (default) cho bộ dữ liệu Home Credit - một dịch vụ chuyên cung cấp các hạn mức tín dụng (khoản vay) cho dân số không có tài khoản ngân hàng. Mục tiêu của dự án là xây dựng một mô hình cân đối giữa chỉ số kỹ thuật và mục tiêu kinh doanh thực tế, kết quả của mô hình phải ra một **quyết định duyệt/không duyệt** rõ ràng
+## Default Risk Predict Model — HomeCredit ###
+Trong dự án này này, tôi sẽ cùng dựng một model dự đoán **khả năng vỡ nợ** (default) cho bộ dữ liệu Home Credit  - một dịch vụ chuyên cung cấp các hạn mức tín dụng (khoản vay) cho dân số không có tài khoản ngân hàng. Mục tiêu của dự án là xây dựng một mô hình cân đối giữa chỉ số kỹ thuật và mục tiêu kinh doanh thực tế, kết quả của mô hình phải ra một **quyết định duyệt/không duyệt** rõ ràng
 
 Dữ liệu để xác lập mục tiêu kinh doanh được tham khảo từ dữ liệu của các tổ chức tín dụng trên thị trường và HomeCredit với mục tiêu cân đối giữa tỷ lệ chấp nhận khoản vay và trần tỷ lệ nợ xấu chấp nhận: 
 - Tỷ lệ chấp nhận khoản vay nằm trong khoảng **60%-70%** 
@@ -2824,35 +2824,65 @@ TEST: approval=60.95%, NPL_app=3.04%, catch=77.08% | prec=15.93%, rec=77.08%, f1
 ```
 </details>
 
-![i1](https://github.com/kiettran13/Customer_analysis/blob/main/Chart/EDA_heatmap.png)
-![i2](https://github.com/kiettran13/Customer_analysis/blob/main/Chart/EDA_heatmap.png)
+![i1](https://github.com/kiettran13/HomeCredit/blob/main/output%20image/output1.png)
+![i2](https://github.com/kiettran13/HomeCredit/blob/main/output%20image/output2.png)
+### Kết luận
 
+Chốt **XGBoost(hist)** với ngưỡng **0.4198796358704566**. Ở validation, mô hình duyệt khoảng **60.50%** và tỷ lệ vỡ nợ trong nhóm được duyệt khoảng **3.09%**, thấp hơn cap khá an toàn. Mô hình cũng bắt được khoảng **76.86%** các ca default.
 
+Với test tỷ lệ duyệt khoảng **60.95%**, tỷ lệ vỡ nợ nhóm được duyệt khoảng **3.04%**, và catch default khoảng **77.08%**. Các chỉ số như precision và F1 không cao (precision khoảng 15.93%), nhưng điều này cũng khá bình thường trong bài toán lệch lớp và để bắt được nhiều ca rủi ro thường phải chấp nhận báo động sai nhiều hơn. 
 
+## 11) Refit FINAL model (Train+Val) & tạo submission
 
+Khi đã chốt được mô hình và ngưỡng, bước tiếp theo là train lại mô hình trên nhiều dữ liệu hơn để tận dụng tối đa thông tin. Tôi sẽ gộp train và validation lại rồi fit một lần cuối. Sau đó, chúng ta chấm điểm cho `application_test`.
 
-
-
-
-
-
-
-
-
+Điểm quan trọng ở đây là tính nhất quán: preprocess pipeline phải giống hệt lúc đánh giá, và ngưỡng quyết định phải giữ nguyên như đã chốt. Dưới đây tôi sẽ tạo file submission với cột `TARGET` ở dạng nhị phân 0/1.
 
 <details>
 <summary><b>Code </b></summary>
 
 ```
+# Refit FINAL model on Train+Val & score application_test
+
+t_star = float(final_threshold)
+print(f"FINAL MODEL: {final_model_name} | FIXED THRESHOLD: {t_star:.6f}")
+
+# ===== 1) Refit model on Train + Val =====
+X_trainval = pd.concat([X_train, X_val])
+y_trainval = pd.concat([y_train, y_val])
+
+final_pipeline_tv = clone(final_pipeline)
+final_pipeline_tv.fit(X_trainval, y_trainval)
+
+# ===== 2) Score application_test =====
+X_kaggle = (
+    test_2
+    .drop(columns=[ID_COL])
+    .reindex(columns=train_2.drop(columns=[ID_COL, TARGET_COL]).columns)
+)
+
+proba_kaggle = final_pipeline_tv.predict_proba(X_kaggle)[:, 1]
+pred01 = (proba_kaggle >= t_star).astype(int)   # 1 = high risk (reject)
+
+# ===== 3) Export submission =====
+submission = pd.DataFrame({
+    ID_COL: test_2[ID_COL],
+    TARGET_COL: pred01
+})
+
+print("\nPrediction summary:")
+print(submission[TARGET_COL].value_counts(normalize=True).rename("rate"))
+
+submission.to_csv("submission_target_01.csv", index=False)
+print("\nSaved: submission_target_01.csv")
+
 ```
 </details>
 
-<details>
-<summary><b>Output </b></summary>
-    
-```
-```
-</details>
+## 10) Kết luận:
+- Public Score Kaggle: **0.7627/0.80570**
+
+- Điểm quan trọng nhất của dự án nằm ở cách chọn threshold tôi không chọn ngưỡng bằng cách tối ưu một metric thuần kỹ thuật, mà chọn theo ràng buộc nghiệp vụ trước rồi mới so sánh các mô hình trong đúng khung đó. Cách làm này giúp kết quả cuối cùng có ý nghĩa thực tế: cùng một dải duyệt, mô hình nào làm nhóm được duyệt sạch hơn và/hoặc chặn được nhiều default hơn thì mô hình đó thật sự hiệu quả. Đồng thời, việc theo dõi ROC_AUC và AP giúp tôi tự tin hơn rằng mô hình có năng lực xếp hạng rủi ro ổn định.
 
 
 
@@ -2870,17 +2900,4 @@ TEST: approval=60.95%, NPL_app=3.04%, catch=77.08% | prec=15.93%, rec=77.08%, f1
 
 
 
-<details>
-<summary><b>Code </b></summary>
-
-```
-```
-</details>
-
-<details>
-<summary><b>Output </b></summary>
-    
-```
-```
-</details>
 
