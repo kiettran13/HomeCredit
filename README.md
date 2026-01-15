@@ -1129,6 +1129,7 @@ BUREAU_BB_STATUS_CNT_0_mean     70.0100
 Base NPL (train): 8.0729%
 ```
 </details>
+
 ### Nhận xét nhanh
 
 Chỉ one-hot encoding biến `CREDIT_ACTIVE`, không làm với `CREDIT_TYPE` vì số lượng category rất nhiều, làm tăng chiều dữ liệu, phức tạp hoá mô hình, không phải biến quan trọng với bài toán.
@@ -1936,6 +1937,7 @@ Base NPL (train): 8.0729%
 [5 rows x 283 columns]
 ```
 </details>
+
 ### Nhận xét nhanh
 
 Chỉ chọn một số biến quan trọng mỗi bảng để tạo thống kê **(trung bình/lớn nhất/nhỏ nhất/tổng)** hoặc **tần suất**. Lưu ý: ở đây tôi sẽ lấy **(trung bình/lớn nhất/nhỏ nhất/tổng)** với các biến numeric **(số tiền/số ngày/số kỳ)**, với các biến one-hot tôi sẽ lấy **(sum/mean)**, ở đây có thể hiểu rằng đơn giản **sum** để đếm số lần khách rơi vào trạng thái đó, trong khi **mean** xem tỷ lệ từ chối/được duyệt của các khoản vay lịch sử 
@@ -2053,6 +2055,7 @@ Numeric: 265 | Categorical: 16
 Train: (184506, 281) Val: (61502, 281) Test: (61503, 281)
 ```
 </details>
+
 ### Nhận xét nhanh 
 
 Sau khi chọn cột và tách nhãn, dữ liệu đưa vào mô hình có kích thước **(307,511, 281)** và base default rate vẫn khoảng **8.0729%**, tức là giữ nguyên phân phối gốc. 
@@ -2546,6 +2549,7 @@ Best threshold (t*): 0.4198796358704566
 TEST -> approval: 60.95% | NPL approved: 3.04% | catch default: 77.08% | ROC-AUC: 0.7809 | PR-AUC(AP): 0.2799
 ```
 </details>
+
 ### Nhận xét nhanh
 
 Dưới cùng điều kiện policy, **XGBoost(hist)** đang đứng đầu trên validation. Mô hình này vừa giữ được tỷ lệ duyệt đúng band, vừa có tỷ lệ vỡ nợ nhóm được duyệt thấp hơn một chút so với các lựa chọn khác.
@@ -2828,13 +2832,14 @@ TEST: approval=60.95%, NPL_app=3.04%, catch=77.08% | prec=15.93%, rec=77.08%, f1
 
 ![i1](https://github.com/kiettran13/HomeCredit/blob/main/output%20image/output1.png)
 ![i2](https://github.com/kiettran13/HomeCredit/blob/main/output%20image/output2.png)
+
 ### Kết luận
 
 Chốt **XGBoost(hist)** với ngưỡng **0.4198796358704566**. Ở validation, mô hình duyệt khoảng **60.50%** và tỷ lệ vỡ nợ trong nhóm được duyệt khoảng **3.09%**, thấp hơn cap khá an toàn. Mô hình cũng bắt được khoảng **76.86%** các ca default.
 
 Với test tỷ lệ duyệt khoảng **60.95%**, tỷ lệ vỡ nợ nhóm được duyệt khoảng **3.04%**, và catch default khoảng **77.08%**. Các chỉ số như precision và F1 không cao (precision khoảng 15.93%), nhưng điều này cũng khá bình thường trong bài toán lệch lớp và để bắt được nhiều ca rủi ro thường phải chấp nhận báo động sai nhiều hơn. 
 
-## 11) Refit FINAL model (Train+Val) & tạo submission
+## 11) Refit FINAL model trên Train+Val & tạo file submission trên Kaggle
 
 Khi đã chốt được mô hình và ngưỡng, bước tiếp theo là train lại mô hình trên nhiều dữ liệu hơn để tận dụng tối đa thông tin. Tôi sẽ gộp train và validation lại rồi fit một lần cuối. Sau đó, chúng ta chấm điểm cho `application_test`.
 
@@ -2882,6 +2887,7 @@ print("\nSaved: submission_target_01.csv")
 </details>
 
 ## 10) Kết luận:
+
 - Public Score Kaggle: **0.7627/0.80570**
 
 - Điểm quan trọng nhất của dự án nằm ở cách chọn threshold tôi không chọn ngưỡng bằng cách tối ưu một metric thuần kỹ thuật, mà chọn theo ràng buộc nghiệp vụ trước rồi mới so sánh các mô hình trong đúng khung đó. Cách làm này giúp kết quả cuối cùng có ý nghĩa thực tế: cùng một dải duyệt, mô hình nào làm nhóm được duyệt sạch hơn và/hoặc chặn được nhiều default hơn thì mô hình đó thật sự hiệu quả. Đồng thời, việc theo dõi ROC_AUC và AP giúp tôi tự tin hơn rằng mô hình có năng lực xếp hạng rủi ro ổn định.
