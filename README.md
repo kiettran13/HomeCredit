@@ -2886,7 +2886,7 @@ print("\nSaved: submission_target_01.csv")
 ```
 </details>
 
-## 10) Kết luận:
+## 10) Tổng kết:
 
 - Public Score Kaggle: **0.7627/0.80570**
 
